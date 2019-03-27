@@ -1,6 +1,6 @@
 import { Course } from './../model/course';
 import { Component, OnInit } from '@angular/core';
-import { interval, timer, fromEvent, Observable} from 'rxjs';
+import { interval, timer, fromEvent, Observable, Subject} from 'rxjs';
 import { createHttpObservable } from '../common/util';
 
 @Component({
@@ -10,34 +10,18 @@ import { createHttpObservable } from '../common/util';
 })
 export class AboutComponent implements OnInit {
 
-  beginerCourses$: Observable<Course[]>;
-  advanceCourses$: Observable<Course[]>;
-
   constructor() { }
 
   ngOnInit() {
-    const http$ : Observable<Course[]> = createHttpObservable('/api/courses');
+    const subject = new Subject();
+    const series$ = subject.asObservable();
 
-      const courses$ = http$
-        .pipe(
-          tap(() => console.log('Http request executed')),
-          map(res => Object.values(res['payload'])),
-          shareReplay() //preventing duplicate Http request
-        );
-      courses$.subscribe();
+    series$.subscribe(console.log);
 
-      this.beginnerCourses$ = courses$
-        .pipe(
-          map(courses => courses
-            .filters(course => course.category=='BEGINER'))
-        );
-
-      this.advanceCourses$ = courses$
-        .pipe(
-          map(courses => courses
-            .filters(course => course.category=='ADVANCE'))
-        );
-
+    subject.next(1);
+    subject.next(2);
+    subject.next(3);
+    subject.complete();
   }
 
 }
