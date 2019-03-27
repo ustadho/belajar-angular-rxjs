@@ -1,5 +1,7 @@
+import { Course } from './../model/course';
 import { Component, OnInit } from '@angular/core';
-import { interval, timer, fromEvent } from 'rxjs';
+import { interval, timer, fromEvent, Observable} from 'rxjs';
+import { createHttpObservable } from '../common/util';
 
 @Component({
   selector: 'app-about',
@@ -8,18 +10,34 @@ import { interval, timer, fromEvent } from 'rxjs';
 })
 export class AboutComponent implements OnInit {
 
+  beginerCourses$: Observable<Course[]>;
+  advanceCourses$: Observable<Course[]>;
+
   constructor() { }
 
   ngOnInit() {
-    const interval$ = interval(1000);
-    const sub = interval$.subscribe(console.log);
+    const http$ : Observable<Course[]> = createHttpObservable('/api/courses');
 
-    setTimeout(() => sub.unsubscribe(), 5000);
+      const courses$ = http$
+        .pipe(
+          tap(() => console.log('Http request executed')),
+          map(res => Object.values(res['payload'])),
+          shareReplay() //preventing duplicate Http request
+        );
+      courses$.subscribe();
 
-    const http$ = createHttpObservable('/api/courses');
-    const sub2 = http$.subscribe(console.log);
+      this.beginnerCourses$ = courses$
+        .pipe(
+          map(courses => courses
+            .filters(course => course.category=='BEGINER'))
+        );
 
-    setTimeout(() => sub2.unsubscribe(), 0);
+      this.advanceCourses$ = courses$
+        .pipe(
+          map(courses => courses
+            .filters(course => course.category=='ADVANCE'))
+        );
+
   }
 
 }
