@@ -1,7 +1,8 @@
 import { Course } from './../model/course';
 import { Component, OnInit } from '@angular/core';
-import { interval, timer, fromEvent, Observable, Subject} from 'rxjs';
+import { interval, timer, fromEvent, Observable, Subject, BehaviorSubject} from 'rxjs';
 import { createHttpObservable } from '../common/util';
+import { validateConfig } from '@angular/router/src/config';
 
 @Component({
   selector: 'app-about',
@@ -13,15 +14,20 @@ export class AboutComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    const subject = new Subject();
+    const subject = new BehaviorSubject(0);
     const series$ = subject.asObservable();
 
-    series$.subscribe(console.log);
+    series$.subscribe(val => console.log("early sub: "+val ));
 
     subject.next(1);
     subject.next(2);
     subject.next(3);
-    subject.complete();
+    subject.complete(); //for behaviour subject it's mean no longer subject
+
+    setTimeout(() => {
+      series$.subscribe(val => console.log('late sub: '+val));
+      subject.next(4);
+    }, 3000);
   }
 
 }
