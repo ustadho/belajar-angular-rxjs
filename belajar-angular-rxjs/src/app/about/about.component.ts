@@ -11,15 +11,15 @@ export class AboutComponent implements OnInit {
   constructor() { }
 
   ngOnInit() {
-    const interval$ = interval(1000); //blue print of stream, have not initialized yet
-    interval$.subscribe((ke) => console.log('Interval Stream 1 ' + ke));
-    interval$.subscribe((ke) => console.log('Interval Stream  2 ' + ke));
+    const interval$ = interval(1000);
+    const sub = interval$.subscribe(console.log);
 
-    const timer$ = timer(3000, 1000); //blue print of stream, have not initialized yet
-    timer$.subscribe((ke) => console.log('Timer Stream ' + ke));
+    setTimeout(() => sub.unsubscribe(), 5000);
 
-    const clicks = fromEvent(document, 'click');
-    clicks.subscribe(evt => console.log(evt));
+    const http$ = createHttpObservable('/api/courses');
+    const sub2 = http$.subscribe(console.log);
+
+    setTimeout(() => sub2.unsubscribe(), 0);
   }
 
 }
